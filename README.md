@@ -7,7 +7,7 @@ to test and run shaders. Yes there is [Shadetoy](https://www.shadertoy.com/) but
 * Easy customisability for syntax highlighting and other functionalities in the Text Editor
 
 
-![Mandlebrot](/Shaderer/assets/screenshots/mandlebrotshader.png)
+![Mandlebrot](/Shaderer/assets/screenshots/mandlebrotshader.PNG)
 
 ### Textures
 You can use upto 3 textures in your shader
