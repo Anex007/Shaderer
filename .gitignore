@@ -1,0 +1,10 @@
+**/bin/
+**/bin-int/
+**/*.vcxproj
+**/*.vcxproj.filters
+**/*.vcxproj.user
+**/*.sln
+**/.vs/
+**/premake5.exe
+**/imgui.ini
+**/raymarching.glsl
