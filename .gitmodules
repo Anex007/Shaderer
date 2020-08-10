@@ -1,6 +1,6 @@
-[submodule ".\\3rdparty\\GLFW"]
-	path = .\\3rdparty\\GLFW
-	url = https://github.com/Anex007/glfw
-[submodule ".\\3rdparty\\imgui"]
-	path = .\\3rdparty\\imgui
+[submodule "3rdparty/imgui"]
+	path = 3rdparty/imgui
 	url = https://github.com/Anex007/imgui
+[submodule "3rdparty/GLFW"]
+	path = 3rdparty/GLFW
+	url = https://github.com/Anex007/glfw
