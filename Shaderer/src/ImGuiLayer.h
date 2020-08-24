@@ -8,6 +8,8 @@
 
 #include "Texture.h"
 
+#include "Camera.h"
+
 class ImGuiLayer
 {
 public:
@@ -18,13 +20,13 @@ public:
 	{
 		if (s_Instance == nullptr)
 			s_Instance = new ImGuiLayer();
-		return s_Instance; 
+		return s_Instance;
 	}
 
 	/* You have to initialize and free with Init and Shutdown explicitly */
 	void Init(Window &window);
 	void Shutdown();
-	
+
 	void SetViewportResize(const std::function<void(ImVec2& size)>& resizeCb) { m_ResizeCb = resizeCb; }
 
 	void SetOnCompile(const std::function<void(ImVec2& size)>& compileCb) { m_CompileCb = compileCb; }
@@ -36,7 +38,7 @@ public:
 
 	void Begin();
 
-	void UpdateViewport(ImTextureID texture_id, const ImVec2& frameSize, float lastTime, float deltaTime, unsigned int frames);
+	void UpdateViewport(ImTextureID texture_id, const ImVec2& frameSize, Camera& camera, float lastTime, float deltaTime, unsigned int frames);
 	void UpdateController(const ImVec2& frameSize, float deltaTime, Texture& tex0, Texture& tex1, Texture& tex2);
 	void UpdateEditor(int lineNum, int colNum, int totalLines, bool overWrite, bool canUndo, const char* lang);
 

@@ -8,3 +8,7 @@
 **/premake5.exe
 **/imgui.ini
 **/raymarching.glsl
+**/Makefile
+
+Shaderer/*.glsl
+tags

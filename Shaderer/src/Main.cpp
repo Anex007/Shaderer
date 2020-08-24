@@ -11,6 +11,7 @@
 #include "FrameBuffer.h"
 #include "Texture.h"
 
+#include "Camera.h"
 
 #include "FileIO.h"
 
@@ -53,6 +54,11 @@ static char shaderCode[MAX_EDITOR_SIZE] =
 "uniform float u_Time;\n"
 "uniform uint u_Frame;\n"
 "uniform float u_DeltaTime;\n"
+"uniform vec3 u_CameraPos;\n"
+"uniform vec3 u_CameraFront;\n"
+"uniform vec3 u_CameraUp;\n"
+"uniform vec3 u_CameraRight;\n"
+"uniform float u_CameraZoom;\n"
 "\n"
 "uniform sampler2D texture1;\n"
 "uniform sampler2D texture2;\n"
@@ -71,7 +77,16 @@ static char shaderCode[MAX_EDITOR_SIZE] =
 
 /*
     TODO: -> Make a templated abstraction for using ImGui multiline editor or the fully featured TextEditor
+    TODO: -> Deprecate u_Mouse access and replace with the camera system.
+
+    Camera System
+          -> Add zoom float as uniform (need a permitable range here thats dealt by us) projection matrix done with this.
+
+    BUGS:
+          -> Camera Movement is janky rn.
+          -> signed distance maybe is the reason we have 2 different shades of white.
 */
+
 
 static void framebuffer_resize(GLFWwindow* window, int width, int height)
 {
@@ -80,17 +95,64 @@ static void framebuffer_resize(GLFWwindow* window, int width, int height)
     main->SetFrameBufferResize(width, height);
 }
 
+/*
+// TODO: Do proper deltaTime instead of assuming it always the same.
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (!ImGuiLayer::GetLayer()->ViewPortFocused) return;
+    if (action == GLFW_RELEASE) return;
+
+    if (key == GLFW_KEY_W)
+        camera.MoveCamera(MoveDir::Forward, 1.0f/60.0f);
+    else if (key == GLFW_KEY_S)
+        camera.MoveCamera(MoveDir::Backward, 1.0f/60.0f);
+    else if (key == GLFW_KEY_D)
+        camera.MoveCamera(MoveDir::Right, 1.0f/60.0f);
+    else if (key == GLFW_KEY_A)
+        camera.MoveCamera(MoveDir::Left, 1.0f/60.0f);
+}
+
+static void mouse_scroll_callback(GLFWwindow* window, double xoff, double yoff)
+{
+    if (!ImGuiLayer::GetLayer()->ViewPortFocused) return;
+    camera.OnMouseScroll(yoff);
+}
+
+static void mouse_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    static bool firstMouse = true;
+    static float lastX = 0.0f;
+    static float lastY = 0.0f;
+
+    if (!ImGuiLayer::GetLayer()->ViewPortFocused) return;
+
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    camera.MouseMovement(lastX - xpos, lastY - ypos);
+    lastX = xpos;
+    lastY = ypos;
+}
+*/
+
 int main()
 {
     DummyFrameBuffer mainDummy(WIDTH(), HEIGHT(), nullptr);
     Window window(WIDTH(), HEIGHT(), "Shaderer");
     window.SetResizeCb(framebuffer_resize);
     window.SetUserDataPointer(&mainDummy);
-    
+    //window.SetMousePosCallback(mouse_pos_callback);
+    //window.SetScrollCallback(mouse_scroll_callback);
+    //window.SetKeyCallback(key_callback);
+
     // uncomment to see the perf
     //window.SetSwapInterval(0);
 
     FrameBuffer shadererFrame(FRAMEBUFFER_WIDTH(), FRAMEBUFFER_HEIGHT(), &mainDummy);
+    Camera camera;
 
     const float squareData[] = {
         -1.0f, -1.0f,  0.0f,  0.0f,
@@ -154,7 +216,7 @@ int main()
         mainShader->UploadUnifrom2f("u_Resolution", size.x, size.y);
     };
     imLayer->SetViewportResize(resize_cb);
-    
+
     auto recompile_cb = [&](ImVec2& size)
     {
         markers.clear();
@@ -177,7 +239,7 @@ int main()
 #ifdef DEBUG
         std::cout << "Saving file: " << location << std::endl;
 #endif
-        if (!IOManager::GetManager()->WriteToFile(location, editor.GetText().c_str(), editor.GetText().length())) {
+        if (!IOManager::GetManager()->WriteToFile(location, editor.GetText().c_str())) {
             return false;
         }
         return true;
@@ -212,6 +274,11 @@ int main()
         mainShader->UploadUniform1f("u_Time", lastTime); // lastTime is good enough
         mainShader->UploadUniform1f("u_DeltaTime", deltaTime);
         mainShader->UploadUniform1ui("u_Frame", frames);
+        mainShader->UploadUniform3f("u_CameraPos", camera.Position);
+        mainShader->UploadUniform3f("u_CameraFront", camera.Front);
+        mainShader->UploadUniform3f("u_CameraUp", camera.Up);
+        mainShader->UploadUniform3f("u_CameraRight", camera.Right);
+        mainShader->UploadUniform1f("u_CameraZoom", camera.Zoom);
 
         mainShader->UploadUniform1i("texture1", tex0.GetTexNum());
         tex0.Bind();
@@ -232,7 +299,7 @@ int main()
         imLayer->Begin();
 
         ImVec2 frameSize = ImVec2(shadererFrame.m_Width, shadererFrame.m_Height);
-        imLayer->UpdateViewport((void*)(intptr_t)shadererFrame.m_ColorAttachment, frameSize, lastTime, deltaTime, frames);
+        imLayer->UpdateViewport((void*)(intptr_t)shadererFrame.m_ColorAttachment, frameSize, camera, lastTime, deltaTime, frames);
         imLayer->UpdateController(frameSize, deltaTime, tex0, tex1, tex2);
 
         auto cpos = editor.GetCursorPosition();

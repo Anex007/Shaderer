@@ -90,7 +90,7 @@ static bool isInside(const ImVec2& value, const ImVec2& start, const ImVec2& siz
     return false;
 }
 
-void ImGuiLayer::UpdateViewport(ImTextureID texture_id, const ImVec2& frameSize, float lastTime, float deltaTime, unsigned int frames)
+void ImGuiLayer::UpdateViewport(ImTextureID texture_id, const ImVec2& frameSize, Camera& camera, float lastTime, float deltaTime, unsigned int frames)
 {
     static bool show_viewport = true;
 
@@ -105,14 +105,28 @@ void ImGuiLayer::UpdateViewport(ImTextureID texture_id, const ImVec2& frameSize,
     ImGuiIO& io = ImGui::GetIO();
 
     ImVec2 w_pos = ImGui::GetWindowPos();
-    bool inside_reg = isInside(io.MousePos, w_pos, m_ViewportSize);
-    ImVec2 mousePos = inside_reg ? io.MousePos : ImVec2(0.0, 0.0);
-    bool leftMouse = inside_reg ? io.MouseDown[0] : false;
-    bool rightMouse = inside_reg ? io.MouseDown[1] : false;
+    bool passInput = ImGui::IsWindowFocused() && isInside(io.MousePos, w_pos, m_ViewportSize);
+    ImVec2 mousePos = passInput ? io.MousePos : ImVec2(0.0, 0.0);
+    bool leftMouse = passInput ? io.MouseDown[0] : false;
+    bool rightMouse = passInput ? io.MouseDown[1] : false;
+
+    if (passInput) {
+        if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_UpArrow))) {
+            camera.MoveCamera(MoveDir::Forward, deltaTime);
+        } else if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_DownArrow))) {
+            camera.MoveCamera(MoveDir::Backward, deltaTime);
+        } else if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
+            camera.MoveCamera(MoveDir::Right, deltaTime);
+        } else if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_LeftArrow))) {
+            camera.MoveCamera(MoveDir::Left, deltaTime);
+        }
+        camera.OnMouseScroll(io.MouseWheel);
+        camera.MouseMovement(io.MouseDelta.x, io.MouseDelta.y);
+    }
 
     if (!m_Paused) m_FrameTargetCb(lastTime, deltaTime, frames, mousePos, leftMouse, rightMouse);
 
-    ImGui::Image(texture_id, frameSize);
+    ImGui::Image(texture_id, frameSize, ImVec2(0, 1), ImVec2(1, 0));
     ImGui::End();
     ImGui::PopStyleVar();
 }
@@ -121,11 +135,13 @@ void ImGuiLayer::UpdateViewport(ImTextureID texture_id, const ImVec2& frameSize,
 void ImGuiLayer::UpdateController(const ImVec2& frameSize, float deltaTime, Texture& tex0, Texture& tex1, Texture& tex2)
 {
     static bool show_controller_window = true;
+    static ImVec4 color = ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
+
+    ImGuiIO& io = ImGui::GetIO();
 
     ImGui::Begin("Controller", &show_controller_window);
-    /* BUG: This makes the shader compile multiple times!!! */
-    //if (ImGui::Button("Compile") || window.IsPressed(RECOMPILE_SHORTCUT())) {
-    if (ImGui::Button("Compile")) {
+    if (ImGui::Button("Compile") || (io.KeyCtrl && io.KeysDown[ImGui::GetKeyIndex(ImGuiKey_Enter)]
+                && io.KeysDownDuration[ImGui::GetKeyIndex(ImGuiKey_Enter)] <= 0.01)) {
         m_CompileCb(m_ViewportSize);
     }
     ImGui::SameLine();
@@ -135,7 +151,7 @@ void ImGuiLayer::UpdateController(const ImVec2& frameSize, float deltaTime, Text
     ImGui::SameLine();
     ImGui::Text("Viewport Resolution %2.f x %2.f", frameSize.x, frameSize.y);
     ImGui::SameLine();
-    ImGui::Text("Framerate: %f FPS", 1.0f / deltaTime);
+    ImGui::Text("Framerate: %0.f FPS", 1.0f / deltaTime);
 
     ImGui::Separator();
     if (ImGui::ImageButton((void*)(intptr_t)tex0.GetTexId(), ImVec2(32.0f, 32.0f))) {
@@ -195,6 +211,9 @@ void ImGuiLayer::UpdateController(const ImVec2& frameSize, float deltaTime, Text
         ImGui::Checkbox("Enabled", &tex2.Enabled);
         ImGui::EndPopup();
     }
+
+    ImGui::Text("Builtin color picker");
+    ImGui::ColorEdit4("MyColor##2f", (float*)&color, ImGuiColorEditFlags_Float);
 
     ImGui::End();
 }

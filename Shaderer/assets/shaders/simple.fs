@@ -1,4 +1,4 @@
-#version 460 core 
+#version 460 core
 
 in vec4 gl_FragCoord;
 in vec2 TexCoord;
@@ -10,6 +10,11 @@ uniform vec4 u_Mouse;
 uniform float u_Time;
 uniform uint u_Frame;
 uniform float u_DeltaTime;
+uniform vec3 u_CameraPos;
+uniform vec3 u_CameraFront;
+uniform vec3 u_CameraUp;
+uniform vec3 u_CameraRight;
+uniform float u_CameraZoom;
 
 uniform sampler2D texture1;
 uniform sampler2D texture2;

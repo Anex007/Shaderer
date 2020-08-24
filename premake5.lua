@@ -65,6 +65,18 @@ project "Shaderer"
 
         defines { "PLATFORM_WINDOWS" }
 
+    filter "system:linux"
+        systemversion "latest"
+
+        links
+        {
+            "Xrandr",
+            "Xi",
+            "X11",
+            "dl",
+            "pthread"
+        }
+
     filter { "configurations:Debug" }
         defines { "DEBUG" }
         symbols "On"

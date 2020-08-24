@@ -16,7 +16,7 @@ public:
     /* Pass in nullptr to skip compiling that shader */
     Shader(const char* vertexPath, const char* fragmentPath);
     ~Shader();
-    
+
     bool UpdateFragmentSrc(const std::string& fragmentSrc);
     void Bind() const;
 
@@ -29,7 +29,7 @@ public:
     void UploadUniform1i(const char* name, int v);
     void UploadUniform1ui(const char* name, unsigned int v);
 
-    void Shader::ParseLastError(std::map<int, std::string>& Errs);
+    void ParseLastError(std::map<int, std::string>& Errs);
 
 private:
     int GetUniformLocation(const char* name);
