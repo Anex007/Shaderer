@@ -44,6 +44,16 @@ public:
 		return true;
 	}
 
+#ifdef PLATFORM_WINDOWS
+
+#else
+#ifdef PLATFORM_LINUX
+
+#endif
+#endif
+
+
+
 	static IOManager* GetManager()
 	{
 		if (s_Instance == nullptr)

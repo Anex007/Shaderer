@@ -77,6 +77,8 @@ project "Shaderer"
             "pthread"
         }
 
+        defines { "PLATFORM_LINUX" }
+
     filter { "configurations:Debug" }
         defines { "DEBUG" }
         symbols "On"

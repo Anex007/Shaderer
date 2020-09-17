@@ -23,7 +23,8 @@
 
 #define MAX_EDITOR_SIZE 1024 * 64
 
-#define RECOMPILE_SHORTCUT() GLFW_KEY_F5
+/* This option removes the editor, so you can code in your favorite text editor and reload the shader on save */
+#define NO_EDITOR_MODE 1
 
 //void clear_error()
 //{
@@ -155,12 +156,12 @@ int main()
     Camera camera;
 
     const float squareData[] = {
-        -1.0f, -1.0f,  0.0f,  0.0f,
-         1.0f, -1.0f,  1.0f,  0.0f,
-         1.0f,  1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  0.0f,  1.0f,
-        -1.0f, -1.0f,  0.0f,  0.0f,
+         1.0f,  1.0f, 1.0f, 1.0f,
+         1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f, 1.0f,
+         1.0f,  1.0f, 1.0f, 1.0f,
     };
 
     VertexArray squareVa;

@@ -14,7 +14,7 @@ class Camera
 {
 public:
     Camera (float yaw = -90.0f, float pitch = 0.0f,
-            float cameraSpeed = 2.0f, float zoomSpeed = 0.02f, float mouseSpeed = 0.5f);
+            float cameraSpeed = 0.3f, float zoomSpeed = 0.02f, float mouseSpeed = 0.5f);
 
     void MouseMovement(float xoff, float yoff);
     void MoveCamera(MoveDir dir, float deltaTime);
